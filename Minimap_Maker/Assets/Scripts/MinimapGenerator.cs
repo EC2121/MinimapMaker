@@ -33,27 +33,35 @@ public class MinimapGenerator : MonoBehaviour
 
         Vector3 pos = new Vector3();
 
-        for (int i = 0; i < 10; i++)
+
+        for (int x = 0; x < NoiseTexture.width; x++)
         {
-            for (int x = 0; x < NoiseTexture.width; x++)
+
+            for (int y = 0; y < NoiseTexture.height; y++)
             {
+                Color color = NoiseTexture.GetPixel(x, y);
+                pos.z += 0.5f;
 
-                for (int y = 0; y < NoiseTexture.height; y++)
-                {
-                    Color color = NoiseTexture.GetPixel(x, y);
-                    Debug.Log(color);
-                    pos.z += 1;
+                InstantiateBlock(pos, (int)(color.r * 10));
 
-                    if (color.r >= 0.3f)
-                    {
-                        Instantiate<GameObject>(cubePrefab, pos, Quaternion.identity, mapRoot.transform);
-                    }
-                }
-
-                pos.z = 0;
-                pos.x += 1;
             }
+
+            pos.z = 0;
+            pos.x += 0.5f;
         }
-        pos.y += 1;
+
+
+    }
+
+
+    private void InstantiateBlock(Vector3 pos, int height)
+    {
+        Debug.Log(height);
+        Vector3 newPos = pos;
+        for (int i = -1; i < height; i++)
+        {
+            Instantiate<GameObject>(cubePrefab, newPos, Quaternion.identity, mapRoot.transform);
+            newPos.y += 0.5f;
+        }
     }
 }
