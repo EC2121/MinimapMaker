@@ -37,8 +37,8 @@ public class NoiseMapGenerator : MonoBehaviour
         {
             for (int y = 0; y < Height; y++)
             {
-                float xCoord = (float)x / Width * 20;
-                float yCoord = (float)y / Height * 20;
+                float xCoord = (float)x / Width * 2;
+                float yCoord = (float)y / Height * 2;
 
                 float noiseFloat = Mathf.PerlinNoise(xCoord, yCoord);
                 Color GreyScaleColor = new Color(noiseFloat, noiseFloat, noiseFloat);
