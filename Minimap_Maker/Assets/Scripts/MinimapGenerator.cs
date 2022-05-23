@@ -9,13 +9,18 @@ public class MinimapGenerator : MonoBehaviour
     [Header("")]
     public bool GenerateMap;
 
-    private GameObject cubePrefab;
+    private GameObject lightDirt;
+    private GameObject darkDirt;
+    private GameObject grassPrefab;
+    private GameObject waterPrefab;
     private GameObject mapRoot;
 
     void Start()
     {
         mapRoot = GameObject.Find("MapRoot");
-        cubePrefab = Resources.Load<GameObject>("Cube");
+        lightDirt = Resources.Load<GameObject>("LightDirt");
+        waterPrefab = Resources.Load<GameObject>("Water");
+        grassPrefab = Resources.Load<GameObject>("Grass");
     }
 
     void Update()
@@ -39,10 +44,11 @@ public class MinimapGenerator : MonoBehaviour
 
             for (int y = 0; y < NoiseTexture.height; y++)
             {
+                
                 Color color = NoiseTexture.GetPixel(x, y);
                 pos.z += 0.5f;
 
-                InstantiateBlock(pos, (int)(color.r * 10));
+                InstantiateBlock(pos, (color.r * 10));
 
             }
 
@@ -50,18 +56,21 @@ public class MinimapGenerator : MonoBehaviour
             pos.x += 0.5f;
         }
 
-
     }
 
-
-    private void InstantiateBlock(Vector3 pos, int height)
+    private void InstantiateBlock(Vector3 pos, float height)
     {
-        Debug.Log(height);
-        Vector3 newPos = pos;
-        for (int i = -1; i < height; i++)
+        GameObject cube = Instantiate<GameObject>(lightDirt, pos, Quaternion.identity, mapRoot.transform);
+        cube.transform.localScale = new Vector3(0.5f, height, 0.5f);
+        cube.transform.position = new Vector3(pos.x, pos.y + (height * 0.5f), pos.z);
+        if (height < 3)
         {
-            Instantiate<GameObject>(cubePrefab, newPos, Quaternion.identity, mapRoot.transform);
-            newPos.y += 0.5f;
+            GameObject water = Instantiate<GameObject>(waterPrefab, new Vector3(pos.x, pos.y + height, pos.z), Quaternion.identity, mapRoot.transform);
+        }
+        else
+        {
+            GameObject grass = Instantiate<GameObject>(grassPrefab, new Vector3(pos.x, pos.y + height, pos.z), Quaternion.identity, mapRoot.transform);
+
         }
     }
 }
