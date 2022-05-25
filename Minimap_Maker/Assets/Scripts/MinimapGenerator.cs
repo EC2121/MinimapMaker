@@ -7,8 +7,8 @@ using UnityEngine.Events;
 public class MinimapGenerator : MonoBehaviour
 {
 
-    public int Width;
-    public int Height;
+    private int Width;
+    private int Height;
 
     public static int MaxHeight = 15;
     public static int GrassHeight = 5;
@@ -16,8 +16,8 @@ public class MinimapGenerator : MonoBehaviour
     public static int WaterHeight = 3;
     public static int SnowHeight = 13;
     [Header("")]
-    public bool GenerateMap;
 
+    private MapData mapData;
     private GameObject lightDirt;
     private GameObject darkDirt;
     private GameObject grassPrefab;
@@ -31,32 +31,27 @@ public class MinimapGenerator : MonoBehaviour
     public static UnityEvent<Texture2D> ChangeMap = new UnityEvent<Texture2D>();
     void Start()
     {
+        mapData = Resources.Load<MapData>("MapDataDefault");
         mapRoot = GameObject.Find("MapRoot");
         lightDirt = Resources.Load<GameObject>("StandardCube");
         waterPrefab = Resources.Load<GameObject>("WaterDirt");
         grassPrefab = Resources.Load<GameObject>("Grass");
+        
+        Width = mapData.Width;
+        Height = mapData.Height;
+        Debug.Log(Width);
+        Debug.Log(Height);
+        GenerateTexture();
+        SpawnMap();
     }
 
     void Update()
     {
-        if (GenerateMap)
-        {
-            GenerateMap = false;
-            GenerateTexture();
-            if (mapObjects[0, 0] != null)
-            {
-                RepositionMap();
-            }
-            else
-            {
-                SpawnMap();
-            }
-
-        }
+        
     }
 
 
-    private void GenerateTexture()
+    public void GenerateTexture()
     {
 
         if (mapObjects == null)
@@ -80,8 +75,8 @@ public class MinimapGenerator : MonoBehaviour
         {
             for (int y = 0; y < Height; y++)
             {
-                float xCoord = (float)x / Width * 2;
-                float yCoord = (float)y / Height * 2;
+                float xCoord = 1 + (float)x / Width * 2;
+                float yCoord = 1 + (float)y / Height * 2;
 
                 float noiseFloat = Mathf.PerlinNoise(xCoord + randOffSet, yCoord + randOffSet);
                 Color GreyScaleColor = new Color(noiseFloat, noiseFloat, noiseFloat);
@@ -119,7 +114,7 @@ public class MinimapGenerator : MonoBehaviour
 
     }
 
-    private void RepositionMap()
+    public void RepositionMap()
     {
         //Vector3 pos = new Vector3();
         ChangeMap?.Invoke(noiseTexture);
@@ -167,28 +162,11 @@ public class MinimapGenerator : MonoBehaviour
     private GameObject InstantiateBlock(Vector3 pos, float height,int indexX,int indexY)
     {
         GameObject cube;
-
         cube = Instantiate<GameObject>(lightDirt, pos, Quaternion.identity, mapRoot.transform);
-
         MapCube mapCube = cube.GetComponent<MapCube>();
-
-        mapCube.indexX = indexX;
-        mapCube.indexY = indexY;
-        
-        cube.transform.GetChild(1).gameObject.SetActive(height >= GrassHeight && height < SnowHeight); // grass
-        cube.transform.GetChild(2).gameObject.SetActive(height < WaterHeight); // water
-        cube.transform.GetChild(3).gameObject.SetActive(height >= WaterHeight && height < GrassHeight); //sand
-        cube.transform.GetChild(4).gameObject.SetActive(height >= SnowHeight); //snow
-
-        cube.transform.localScale = new Vector3(1, height + 0.1f, 1);
+        mapCube.Load(mapData,indexX,indexY);
         cube.transform.position = new Vector3(pos.x, pos.y /*+ (height * 0.5f)*/, pos.z);
-
-        for (int i = 1; i < cube.transform.childCount; i++)
-        {
-           
-                cube.transform.GetChild(i).transform.Translate(planeOffset);
-        }
-
+        //cube.transform.localScale = new Vector3(1, height + 0.1f, 1);
         return cube;
     }
 }

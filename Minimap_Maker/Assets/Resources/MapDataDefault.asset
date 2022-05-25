@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d59207147d63f04f8f717db34f7a783, type: 3}
+  m_Name: MapDataDefault
+  m_EditorClassIdentifier: 
+  Width: 32
+  Height: 32
+  MaxHeight: 16
+  GrassHeight: 5
+  SandHeight: 4
+  WaterHeight: 3
+  SnowHeight: 11
