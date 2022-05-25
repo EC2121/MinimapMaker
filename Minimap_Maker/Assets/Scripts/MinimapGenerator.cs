@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class MinimapGenerator : MonoBehaviour
 {
@@ -9,11 +10,11 @@ public class MinimapGenerator : MonoBehaviour
     public int Width;
     public int Height;
 
-    public float MaxHeight = 15;
-    public int GrassHeight = 7;
-    public int SandHeight = 6;
-    public int WaterHeight = 3;
-    public int SnowHeight = 13;
+    public static int MaxHeight = 15;
+    public static int GrassHeight = 5;
+    public static int SandHeight = 4;
+    public static int WaterHeight = 3;
+    public static int SnowHeight = 13;
     [Header("")]
     public bool GenerateMap;
 
@@ -27,7 +28,7 @@ public class MinimapGenerator : MonoBehaviour
 
     private GameObject[,] mapObjects;
 
-
+    public static UnityEvent<Texture2D> ChangeMap = new UnityEvent<Texture2D>();
     void Start()
     {
         mapRoot = GameObject.Find("MapRoot");
@@ -108,7 +109,7 @@ public class MinimapGenerator : MonoBehaviour
                 Color color = noiseTexture.GetPixel(x, y);
                 pos.z += 0.5f;
 
-                mapObjects[x, y] = InstantiateBlock(pos, (color.r * MaxHeight));
+                mapObjects[x, y] = InstantiateBlock(pos, (color.r * MaxHeight),x,y);
 
             }
 
@@ -120,57 +121,60 @@ public class MinimapGenerator : MonoBehaviour
 
     private void RepositionMap()
     {
-        Vector3 pos = new Vector3();
-        for (int x = 0; x < Width; x++)
-        {
+        //Vector3 pos = new Vector3();
+        ChangeMap?.Invoke(noiseTexture);
+        //for (int x = 0; x < Width; x++)
+        //{
 
-            for (int y = 0; y < Height; y++)
-            {
+        //    for (int y = 0; y < Height; y++)
+        //    {
 
-                Color color = noiseTexture.GetPixel(x, y);
-                pos.z += 0.5f;
+        //        Color color = noiseTexture.GetPixel(x, y);
+        //        pos.z += 0.5f;
 
-                for (int i = 1; i < mapObjects[x, y].transform.childCount; i++)
-                {
-                    if (mapObjects[x, y].transform.GetChild(i).gameObject.activeInHierarchy)
-                    {
-                        mapObjects[x, y].transform.GetChild(i).transform.Translate(-planeOffset);
-                    }
-                }
+        //        for (int i = 1; i < mapObjects[x, y].transform.childCount; i++)
+        //        {
+        //            if (mapObjects[x, y].transform.GetChild(i).gameObject.activeInHierarchy)
+        //            {
+        //                mapObjects[x, y].transform.GetChild(i).transform.Translate(-planeOffset);
+        //            }
+        //        }
 
-                mapObjects[x, y].transform.localScale = new Vector3(1, color.r * MaxHeight + 0.1f, 1);
+        //        mapObjects[x, y].transform.localScale = new Vector3(1, color.r * MaxHeight + 0.1f, 1);
 
-                mapObjects[x, y].transform.GetChild(1).gameObject.SetActive(color.r * MaxHeight >= GrassHeight && color.r * MaxHeight < SnowHeight); // grass
-                mapObjects[x, y].transform.GetChild(2).gameObject.SetActive(color.r * MaxHeight < WaterHeight); // water
-                mapObjects[x, y].transform.GetChild(3).gameObject.SetActive(color.r * MaxHeight >= WaterHeight && color.r * MaxHeight < GrassHeight); //sand
-                mapObjects[x, y].transform.GetChild(4).gameObject.SetActive(color.r * MaxHeight >= SnowHeight); //snow
+        //        mapObjects[x, y].transform.GetChild(1).gameObject.SetActive(color.r * MaxHeight >= GrassHeight && color.r * MaxHeight < SnowHeight); // grass
+        //        mapObjects[x, y].transform.GetChild(2).gameObject.SetActive(color.r * MaxHeight < WaterHeight); // water
+        //        mapObjects[x, y].transform.GetChild(3).gameObject.SetActive(color.r * MaxHeight >= WaterHeight && color.r * MaxHeight < GrassHeight); //sand
+        //        mapObjects[x, y].transform.GetChild(4).gameObject.SetActive(color.r * MaxHeight >= SnowHeight); //snow
 
-                mapObjects[x, y].transform.position = new Vector3(pos.x, pos.y /*+ ((color.r * MaxHeight) * 0.5f)*/, pos.z);
-                for (int i = 1; i < mapObjects[x, y].transform.childCount; i++)
-                {
-                    if (mapObjects[x, y].transform.GetChild(i).gameObject.activeInHierarchy)
-                    {
-                        mapObjects[x, y].transform.GetChild(i).transform.Translate(planeOffset);
-                    }
-                }
-            }
+        //        mapObjects[x, y].transform.position = new Vector3(pos.x, pos.y /*+ ((color.r * MaxHeight) * 0.5f)*/, pos.z);
+        //        for (int i = 1; i < mapObjects[x, y].transform.childCount; i++)
+        //        {
+        //            if (mapObjects[x, y].transform.GetChild(i).gameObject.activeInHierarchy)
+        //            {
+        //                mapObjects[x, y].transform.GetChild(i).transform.Translate(planeOffset);
+        //            }
+        //        }
+        //    }
 
-            pos.z = 0;
-            pos.x += 0.5f;
-        }
-
-    }
-    private void RepositionBlock()
-    {
+        //    pos.z = 0;
+        //    pos.x += 0.5f;
+        //}
 
     }
+ 
 
-    private GameObject InstantiateBlock(Vector3 pos, float height)
+    private GameObject InstantiateBlock(Vector3 pos, float height,int indexX,int indexY)
     {
         GameObject cube;
 
         cube = Instantiate<GameObject>(lightDirt, pos, Quaternion.identity, mapRoot.transform);
 
+        MapCube mapCube = cube.GetComponent<MapCube>();
+
+        mapCube.indexX = indexX;
+        mapCube.indexY = indexY;
+        
         cube.transform.GetChild(1).gameObject.SetActive(height >= GrassHeight && height < SnowHeight); // grass
         cube.transform.GetChild(2).gameObject.SetActive(height < WaterHeight); // water
         cube.transform.GetChild(3).gameObject.SetActive(height >= WaterHeight && height < GrassHeight); //sand
@@ -178,15 +182,12 @@ public class MinimapGenerator : MonoBehaviour
 
         cube.transform.localScale = new Vector3(1, height + 0.1f, 1);
         cube.transform.position = new Vector3(pos.x, pos.y /*+ (height * 0.5f)*/, pos.z);
+
         for (int i = 1; i < cube.transform.childCount; i++)
         {
-            if (cube.transform.GetChild(i).gameObject.activeInHierarchy)
-            {
+           
                 cube.transform.GetChild(i).transform.Translate(planeOffset);
-            }
         }
-
-
 
         return cube;
     }
