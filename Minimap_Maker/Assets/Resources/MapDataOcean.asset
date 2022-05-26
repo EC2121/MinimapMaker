@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Width: 32
   Height: 32
-  MaxHeight: 3
+  MaxHeight: 2
   MinHeight: 0
   GrassHeight: 5
   SandHeight: 4
-  WaterHeight: 2
+  WaterHeight: 1.3
   SnowHeight: 13
