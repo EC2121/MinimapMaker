@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3d59207147d63f04f8f717db34f7a783, type: 3}
-  m_Name: MapDataDefault
+  m_Name: MapDataMountain
   m_EditorClassIdentifier: 
-  Width: 32
-  Height: 32
-  MaxHeight: 8
-  GrassHeight: 1.8
-  SandHeight: 1
-  WaterHeight: 1.5
-  SnowHeight: 6
+  Width: 0
+  Height: 0
+  MaxHeight: 15
+  GrassHeight: 5
+  SandHeight: 4
+  WaterHeight: 3
+  SnowHeight: 13

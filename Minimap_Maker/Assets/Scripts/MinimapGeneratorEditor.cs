@@ -11,10 +11,26 @@ public class MinimapGeneratorEditor : Editor
     {
         DrawDefaultInspector();
         MinimapGenerator generator = (MinimapGenerator)target;
+
+        if (generator.RandomBiome)
+            GUI.enabled = false;
+        generator.BiomeSelector = (Biome)EditorGUILayout.EnumPopup("Biome:", generator.BiomeSelector);
+
+        if (generator.RandomFade)
+            GUI.enabled = false;
+        else
+            GUI.enabled = true;
+
+        generator.FadeType = (FadeType)EditorGUILayout.EnumPopup("Fade:", generator.FadeType);
+
+        GUI.enabled = true;
         if (GUILayout.Button("Generate New Map"))
         {
             generator.GenerateTexture();
             generator.RepositionMap();
         }
+
+
+
     }
 }

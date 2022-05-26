@@ -4,79 +4,63 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
+public enum Biome {Ocean,Plain,Mountain,Mixed};
+public enum FadeType { Center,LeftToRight,RightToLeft,TopToBottom,BottomToTop,Corner,Random,NoiseMap};
 public class MinimapGenerator : MonoBehaviour
 {
+    [HideInInspector]
+    public Biome BiomeSelector = Biome.Mixed;
+    [HideInInspector]
+    public FadeType FadeType = FadeType.NoiseMap;
 
-    private int Width;
-    private int Height;
+    public bool RandomBiome;
+    public bool RandomFade;
 
-    public static int MaxHeight = 15;
-    public static int GrassHeight = 5;
-    public static int SandHeight = 4;
-    public static int WaterHeight = 3;
-    public static int SnowHeight = 13;
-    [Header("")]
-
-    private MapData mapData;
-    private GameObject lightDirt;
-    private GameObject darkDirt;
-    private GameObject grassPrefab;
-    private GameObject waterPrefab;
+  
+    private int width;
+    private int height;
+    private Dictionary<Biome, MapData> biomesData;
+    private GameObject defaultCube;
+   
     private GameObject mapRoot;
-    private Vector3 planeOffset = new Vector3(0, 0.01f, 0);
     private Texture2D noiseTexture;
+    public static UnityEvent<Texture2D,Biome,FadeType> ChangeMap = new UnityEvent<Texture2D,Biome,FadeType>();
 
-    private GameObject[,] mapObjects;
-
-    public static UnityEvent<Texture2D> ChangeMap = new UnityEvent<Texture2D>();
+    
     void Start()
     {
-        mapData = Resources.Load<MapData>("MapDataDefault");
+        MapData mixedMapData = Resources.Load<MapData>("MapDataDefault");
+        MapData plainsMapData = Resources.Load<MapData>("MapDataPlain");
+        MapData oceanMapData = Resources.Load<MapData>("MapDataOcean");
+        MapData mountainsMapData = Resources.Load<MapData>("MapDataMountain");
+        biomesData = new Dictionary<Biome, MapData>();
+        biomesData[Biome.Mixed] = mixedMapData;
+        biomesData[Biome.Ocean] = oceanMapData;
+        biomesData[Biome.Mountain] = mountainsMapData;
+        biomesData[Biome.Plain] = plainsMapData;
+
         mapRoot = GameObject.Find("MapRoot");
-        lightDirt = Resources.Load<GameObject>("StandardCube");
-        waterPrefab = Resources.Load<GameObject>("WaterDirt");
-        grassPrefab = Resources.Load<GameObject>("Grass");
-        
-        Width = mapData.Width;
-        Height = mapData.Height;
-        Debug.Log(Width);
-        Debug.Log(Height);
+        defaultCube = Resources.Load<GameObject>("Cube");
+       
+        width = mixedMapData.Width;
+        height = mixedMapData.Height;
+       
         GenerateTexture();
         SpawnMap();
     }
 
-    void Update()
-    {
-        
-    }
-
-
     public void GenerateTexture()
     {
-
-        if (mapObjects == null)
-        {
-            mapObjects = new GameObject[Width, Height];
-        }
-
-        if (noiseTexture != null && (noiseTexture.width != Width || noiseTexture.height != Height))
-        {
-            Array.Clear(mapObjects, 0, mapObjects.Length);
-            mapObjects = new GameObject[Width, Height];
-        }
-
-
-
-        noiseTexture = new Texture2D(Width, Height);
+        noiseTexture = new Texture2D(width, height);
         System.Random rand = new System.Random(System.DateTime.Now.Millisecond);
 
         int randOffSet = rand.Next(1, 100);
-        for (int x = 0; x < Width; x++)
+        for (int x = 0; x < width; x++)
         {
-            for (int y = 0; y < Height; y++)
+            for (int y = 0; y < height; y++)
             {
-                float xCoord = 1 + (float)x / Width * 2;
-                float yCoord = 1 + (float)y / Height * 2;
+                float xCoord = 1 + (float)x / width * 2;
+                float yCoord = 1 + (float)y / height * 2;
 
                 float noiseFloat = Mathf.PerlinNoise(xCoord + randOffSet, yCoord + randOffSet);
                 Color GreyScaleColor = new Color(noiseFloat, noiseFloat, noiseFloat);
@@ -91,80 +75,37 @@ public class MinimapGenerator : MonoBehaviour
     }
     private void SpawnMap()
     {
-
         Vector3 pos = new Vector3();
-
-
-        for (int x = 0; x < Width; x++)
+        for (int x = 0; x < width; x++)
         {
 
-            for (int y = 0; y < Height; y++)
+            for (int y = 0; y < height; y++)
             {
-
-                Color color = noiseTexture.GetPixel(x, y);
                 pos.z += 0.5f;
-
-                mapObjects[x, y] = InstantiateBlock(pos, (color.r * MaxHeight),x,y);
-
+                InstantiateBlock(pos,x,y);
             }
-
             pos.z = 0;
             pos.x += 0.5f;
         }
-
     }
 
     public void RepositionMap()
     {
-        //Vector3 pos = new Vector3();
-        ChangeMap?.Invoke(noiseTexture);
-        //for (int x = 0; x < Width; x++)
-        //{
+        if (RandomBiome)
+            BiomeSelector = (Biome)UnityEngine.Random.Range(0, (int)Biome.Mixed + 1);
+        if (RandomFade)
+            FadeType = (FadeType)UnityEngine.Random.Range(0, (int)FadeType.NoiseMap + 1);
 
-        //    for (int y = 0; y < Height; y++)
-        //    {
-
-        //        Color color = noiseTexture.GetPixel(x, y);
-        //        pos.z += 0.5f;
-
-        //        for (int i = 1; i < mapObjects[x, y].transform.childCount; i++)
-        //        {
-        //            if (mapObjects[x, y].transform.GetChild(i).gameObject.activeInHierarchy)
-        //            {
-        //                mapObjects[x, y].transform.GetChild(i).transform.Translate(-planeOffset);
-        //            }
-        //        }
-
-        //        mapObjects[x, y].transform.localScale = new Vector3(1, color.r * MaxHeight + 0.1f, 1);
-
-        //        mapObjects[x, y].transform.GetChild(1).gameObject.SetActive(color.r * MaxHeight >= GrassHeight && color.r * MaxHeight < SnowHeight); // grass
-        //        mapObjects[x, y].transform.GetChild(2).gameObject.SetActive(color.r * MaxHeight < WaterHeight); // water
-        //        mapObjects[x, y].transform.GetChild(3).gameObject.SetActive(color.r * MaxHeight >= WaterHeight && color.r * MaxHeight < GrassHeight); //sand
-        //        mapObjects[x, y].transform.GetChild(4).gameObject.SetActive(color.r * MaxHeight >= SnowHeight); //snow
-
-        //        mapObjects[x, y].transform.position = new Vector3(pos.x, pos.y /*+ ((color.r * MaxHeight) * 0.5f)*/, pos.z);
-        //        for (int i = 1; i < mapObjects[x, y].transform.childCount; i++)
-        //        {
-        //            if (mapObjects[x, y].transform.GetChild(i).gameObject.activeInHierarchy)
-        //            {
-        //                mapObjects[x, y].transform.GetChild(i).transform.Translate(planeOffset);
-        //            }
-        //        }
-        //    }
-
-        //    pos.z = 0;
-        //    pos.x += 0.5f;
-        //}
-
+        ChangeMap?.Invoke(noiseTexture,BiomeSelector,FadeType);
     }
  
 
-    private GameObject InstantiateBlock(Vector3 pos, float height,int indexX,int indexY)
+    private GameObject InstantiateBlock(Vector3 pos,int indexX,int indexY)
     {
         GameObject cube;
-        cube = Instantiate<GameObject>(lightDirt, pos, Quaternion.identity, mapRoot.transform);
+        cube = Instantiate<GameObject>(defaultCube, pos, Quaternion.identity, mapRoot.transform);
         MapCube mapCube = cube.GetComponent<MapCube>();
-        mapCube.Load(mapData,indexX,indexY);
+        mapCube.Load(biomesData,indexX,indexY);
         cube.transform.position = new Vector3(pos.x, pos.y /*+ (height * 0.5f)*/, pos.z);
         //cube.transform.localScale = new Vector3(1, height + 0.1f, 1);
         return cube;
