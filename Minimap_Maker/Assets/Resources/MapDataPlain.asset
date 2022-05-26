@@ -16,7 +16,7 @@ MonoBehaviour:
   Height: 32
   MaxHeight: 5
   MinHeight: 0
-  GrassHeight: 3
+  GrassHeight: 1.3
   SandHeight: 4
-  WaterHeight: 1.5
+  WaterHeight: 1
   SnowHeight: 13
