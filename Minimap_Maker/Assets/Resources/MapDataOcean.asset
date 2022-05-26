@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d59207147d63f04f8f717db34f7a783, type: 3}
   m_Name: MapDataOcean
   m_EditorClassIdentifier: 
-  Width: 0
-  Height: 0
-  MaxHeight: 15
+  Width: 32
+  Height: 32
+  MaxHeight: 3
+  MinHeight: 0
   GrassHeight: 5
   SandHeight: 4
-  WaterHeight: 3
+  WaterHeight: 2
   SnowHeight: 13

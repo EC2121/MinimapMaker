@@ -15,6 +15,7 @@ MonoBehaviour:
   Width: 32
   Height: 32
   MaxHeight: 8
+  MinHeight: 0
   GrassHeight: 1.8
   SandHeight: 1
   WaterHeight: 1.5
