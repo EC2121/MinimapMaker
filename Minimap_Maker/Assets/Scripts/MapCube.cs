@@ -14,7 +14,6 @@ public class MapCube : MonoBehaviour
     private float waterHeight;
     private float snowHeight;
 
-
     private bool hasTree;
     private bool hasHouse;
     private Transform dirtParent;
@@ -31,8 +30,10 @@ public class MapCube : MonoBehaviour
     {
         MinimapGenerator.ChangeMap.AddListener(StartRepositioning);
     }
-
-
+    private void OnDisable()
+    {
+        MinimapGenerator.ChangeMap.RemoveListener(StartRepositioning);
+    }
     public void Load(Dictionary<Biome, MapData> Dict, int indexX, int indexY)
     {
        
@@ -95,6 +96,7 @@ public class MapCube : MonoBehaviour
                 Random.Range(0, 100) >= 95;
 
         newObjectPos = new Vector3(0, newHeight.y * 0.5f, 0);
+
         StartCoroutine(ChangeTypeCorutine());
 
     }
@@ -112,7 +114,7 @@ public class MapCube : MonoBehaviour
         if (hasTree)
             treeTransform.DOMoveY(newObjectPos.y, 2f);
         else
-            treeTransform.DOLocalMoveY(0, 1f);
+            treeTransform.DOMoveY(0, 1f);
         yield return new WaitForSeconds(0.5f);
         house?.gameObject.SetActive(!(newHeight.y < waterHeight));
         transform.GetChild(1).gameObject.SetActive(hasTree);
