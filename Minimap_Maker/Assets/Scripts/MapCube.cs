@@ -114,7 +114,7 @@ public class MapCube : MonoBehaviour
         if (hasTree)
             treeTransform.DOMoveY(newObjectPos.y, 2f);
         else
-            treeTransform.DOMoveY(0, 1f);
+            treeTransform.DOMoveY(0, 0.01f + (newHeight.y / biomeDictionary[currentBiome].MaxHeight));
         yield return new WaitForSeconds(0.5f);
         house?.gameObject.SetActive(!(newHeight.y < waterHeight));
         transform.GetChild(1).gameObject.SetActive(hasTree);
