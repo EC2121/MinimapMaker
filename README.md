@@ -33,5 +33,5 @@ They will pick a biome and a fade style for you.
 https://user-images.githubusercontent.com/89205380/194915867-3da1d274-5d61-45fd-a6f2-38a662a88497.mp4
 
 
-Houses have a fixed position chosen randomly at the start but the will fade if they happen to be in a water block.
+Houses have a fixed position chosen randomly at the start but they will fade if they happen to be in a water block.
 Trees can't spawn on water and sand blocks.
