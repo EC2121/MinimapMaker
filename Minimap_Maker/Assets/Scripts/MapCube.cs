@@ -14,6 +14,7 @@ public class MapCube : MonoBehaviour
     private float waterHeight;
     private float snowHeight;
 
+    private bool changingBiome;
     private bool hasTree;
     private bool hasHouse;
     private Transform dirtParent;
@@ -36,7 +37,6 @@ public class MapCube : MonoBehaviour
     }
     public void Load(Dictionary<Biome, MapData> Dict, int indexX, int indexY)
     {
-       
         biomeDictionary = Dict;
         dirtParent = transform.GetChild(0);
         dirtParent.GetChild(1).gameObject.SetActive(false); // grass
@@ -59,6 +59,8 @@ public class MapCube : MonoBehaviour
             house = Instantiate<GameObject>(go, transform);
             house.transform.position = transform.position;
         }
+
+
         secondsToWaitDictonary[FadeType.Center] = (Mathf.Abs((biomeDictionary[0].Width / 2) - (indexX))
             + Mathf.Abs((biomeDictionary[0].Height / 2) - indexY)) * 0.05f;
         secondsToWaitDictonary[FadeType.LeftToRight] = indexX * 0.05f;
@@ -69,7 +71,7 @@ public class MapCube : MonoBehaviour
         secondsToWaitDictonary[FadeType.Random] = UnityEngine.Random.Range(0, 33) * 0.05f;
      
     }
-    public void StartRepositioning(Texture2D noiseTexutre, Biome current, FadeType fadeType)
+    public void StartRepositioning(Texture2D noiseTexture, Biome current, FadeType fadeType)
     {
 
         if (currentBiome != current)
@@ -79,20 +81,25 @@ public class MapCube : MonoBehaviour
             waterHeight = biomeDictionary[current].WaterHeight;
             sandHeight = biomeDictionary[current].SandHeight;
             snowHeight = biomeDictionary[current].SnowHeight;
+            changingBiome = true;
         }
+        else
+            changingBiome=false;
+
         currentBiome = current;
         currentFadeType = fadeType;
-        
-        float pixelColor = noiseTexutre.GetPixel(indexX, indexY).r;
 
+        float pixelColor = noiseTexture.GetPixel(indexX, indexY).r;
+        
         if (fadeType == FadeType.NoiseMap)
             secondsToWaitDictonary[FadeType.NoiseMap] = (pixelColor * 32) * 0.1f;
+
 
         newHeight.y = pixelColor * maxHeight + biomeDictionary[current].MinHeight;
 
         hasTree = !hasHouse &&
-        newHeight.y >= grassHeight &&
-            (newHeight.y < snowHeight || newHeight.y >= snowHeight) &&
+        ((newHeight.y >= grassHeight && newHeight.y < snowHeight) ||
+        newHeight.y >= snowHeight) &&
                 Random.Range(0, 100) >= 95;
 
         newObjectPos = new Vector3(0, newHeight.y * 0.5f, 0);
@@ -104,20 +111,21 @@ public class MapCube : MonoBehaviour
 
     IEnumerator ChangeTypeCorutine()
     {
+        bool isWater = newHeight.y < waterHeight;
         yield return new WaitForSeconds(secondsToWaitDictonary[currentFadeType]);
         dirtParent.DOScaleY(newHeight.y + 0.1f, 2f);
         dirtParent.GetChild(1).gameObject.SetActive(newHeight.y >= grassHeight && newHeight.y < snowHeight); // grass
-        dirtParent.GetChild(2).gameObject.SetActive(newHeight.y < waterHeight); // water
+        dirtParent.GetChild(2).gameObject.SetActive(isWater); // water
         dirtParent.GetChild(3).gameObject.SetActive(newHeight.y >= waterHeight && newHeight.y < grassHeight); //sand
         dirtParent.GetChild(4).gameObject.SetActive(newHeight.y >= snowHeight); //snow
-        house?.transform.DOMoveY(newHeight.y < waterHeight ? 0 : newObjectPos.y, 2f);
+        house?.transform.DOMoveY(isWater ? -1 : newObjectPos.y, 2f);
         if (hasTree)
             treeTransform.DOMoveY(newObjectPos.y, 2f);
         else
-            treeTransform.DOMoveY(0, 0.01f + (newHeight.y / biomeDictionary[currentBiome].MaxHeight));
+            treeTransform.DOMoveY(-0.5f, 0.01f + (newHeight.y / biomeDictionary[currentBiome].MaxHeight));
         yield return new WaitForSeconds(0.5f);
-        house?.gameObject.SetActive(!(newHeight.y < waterHeight));
-        transform.GetChild(1).gameObject.SetActive(hasTree);
+        house?.gameObject.SetActive(!isWater);
+        treeTransform.gameObject.SetActive(hasTree);
 
     }
 

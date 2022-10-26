@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
-
+using System.Linq;
 public enum Biome {Ocean,Plain,Mountain,Mixed};
 public enum FadeType { Center,LeftToRight,RightToLeft,TopToBottom,BottomToTop,Corner,Random,NoiseMap};
 public class MinimapGenerator : MonoBehaviour
